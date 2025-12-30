@@ -61,6 +61,11 @@ Simply import the workflow JSON and set up credentials.
 
 ### Option B: Self-Hosted (Docker)
 This is the recommended approach for full control.
+
+> **💡 Hosting Tip:**
+> *   **New Users**: Get **$200 free credit** for 2 months on DigitalOcean.
+> *   **Students**: Get **$200 free credit** for 1 year via the [GitHub Student Developer Pack](https://education.github.com/pack).
+
 ![Self Hosted](docs/screenshots/digital-ocean-setup.png)
 
 1.  **Run n8n** (example `docker-compose.yml` snippet):
@@ -96,6 +101,7 @@ This is the most critical part. Follow carefully.
 1.  Register for a free key.
 2.  Your key is a string (e.g., `K839...`).
 3.  **Do not creates an n8n credential.** This key will be used as an Environment Variable (`OCR_SPACE_API_KEY`).
+![OCR Setup](docs/screenshots/ocr.png)
 
 ### 🧠 3. DeepSeek API
 1.  Generate an API Key in DeepSeek platform.
