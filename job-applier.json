@@ -1,0 +1,718 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "documentId": "={{ $env.GSHEET_OFFERS_ID }}",
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Feuille 1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/{{ $env.GSHEET_OFFERS_ID }}/edit#gid=0"
+                },
+                "options": {}
+            },
+            "name": "Google Sheets",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4,
+            "position": [
+                368,
+                976
+            ],
+            "id": "14dadb1f-7060-424b-86e9-402d5ad62462"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=You are a bilingual assistant specialized in writing professional internship application emails (PFE 2026).\n\nThe candidate is Anass Essadikine,\nMaster’s student in Data Science & Big Data at the Faculty of Sciences Ben M’Sik,\nwith a strong focus on data engineering, machine learning, AI, and intelligent automation.\n\nYou will receive a JSON input with the following keys:\n\nRecruiter Email: {{ $json[\"Recruiter Email\"] }}\n\nJob Title: {{ $json[\"Job Title\"] }}\n\nCategorie: {{ $json.Categorie }}\n\nJob Offer Message: {{ $json[\"Job Offer Message\"] }}\n\n🎯 Your Task\n\nGenerate a professional, customized internship application email for PFE 2026 that:\n\nUses the same language as the recruiter’s message (French or English).\n\nAdapts the tone, structure, and subject format to match the recruiter’s post (if a subject format is explicitly requested, reuse it exactly).\n\nClearly highlights the alignment between the job offer and Anass Essadikine’s academic profile as:\n\nMaster’s student in Data Science & Big Data\n\nFaculty of Sciences Ben M’Sik\n\nSkills in data analysis, data engineering, machine learning, AI, and automation.\n\nDoes NOT mention or assume the recruiter’s name (use neutral greetings only).\n\nProduces a clean, concise, and value-driven email suitable for professional recruitment.\n\nReturns a structured JSON object only, exactly as specified.\n\n🧠 Step-by-Step Instructions for the AI\n\n1. Language detection\n\nIf the job offer message is in French → respond entirely in French.\n\nIf the job offer message is in English → respond entirely in English.\n\n2. Subject line generation\n\nIf the recruiter explicitly requests a specific subject format, reuse it exactly as written.\n\nOtherwise:\n\nFrench → Candidature – Stage PFE 2026 {{ $json[\"Job Title\"] }}\n\nEnglish → {{ $json[\"Job Title\"] }} Internship – PFE 2026 Application\n\n3. Message writing rules\n\nUse a professional, confident, and concise tone.\n\nAdapt the content to reflect:\n\nThe job title\n\nThe company domain\n\nTechnologies, skills, duration, or location mentioned in the offer (if any)\n\nThe email must always include:\n\nA neutral greeting (e.g. Bonjour, / Hello, / Dear Hiring Team,)\n\nA clear reference to the internship offer and job title\n\nA short value-driven pitch presenting Anass Essadikine as:\n\nA Master’s student in Data Science & Big Data at the Faculty of Sciences Ben M’Sik\n\nMotivated to apply his academic knowledge to real-world projects\n\nAligned with the technical and business needs described in the offer\n\nA mention that the CV is attached\n\nA polite and professional closing\n\n⚠️ Important constraints\n\nDo NOT include the recruiter’s name anywhere.\n\nDo NOT add explanations, comments, or markdown.\n\nDo NOT invent information not present in the job offer.\n\n📤 Output Format\n\nReturn only valid JSON using exactly this structure:\n\n{\n  \"object\": \"the email subject line (same language as recruiter message or same format as requested in offer)\",\n  \"message\": \"the full email body in the same language, following the required tone and structure\",\n  \"cv_category\": \"{{ $json.Categorie }}\",\n  \"Job Title\": \"{{ $json['Job Title'] }}\",\n  \"email_to\": \"{{ $json['Recruiter Email'] }}\"\n}",
+                "batching": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.7,
+            "position": [
+                1040,
+                992
+            ],
+            "id": "4d3f862c-5a65-403d-8d8b-2d7e604bdd33",
+            "name": "Basic LLM Chain"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+            "typeVersion": 1,
+            "position": [
+                1040,
+                1168
+            ],
+            "id": "115cb470-ab44-4491-af27-adcd664c9816",
+            "name": "DeepSeek Chat Model"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Raw JSON string extracted from the input\nconst rawJson = $json[\"text\"];\n\n// Remove the markdown formatting and parse the JSON\nconst cleanedJson = rawJson.replace(/```json\\n|\\n```/g, '');\n\nlet parsedJson;\ntry {\n  parsedJson = JSON.parse(cleanedJson);\n} catch (error) {\n  return { json: { error: \"Invalid JSON format\" } };\n}\n\nreturn {\n  json: {\n    \"object\": parsedJson[\"object\"],\n    \"message\": parsedJson[\"message\"],\n    \"cv_category\": parsedJson[\"cv_category\"],\n    \"Job_Title\": parsedJson[\"Job Title\"],\n    \"email_to\": parsedJson[\"email_to\"]\n  }\n};\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1360,
+                992
+            ],
+            "id": "61f57883-e8e0-41e2-ac16-a904f66d3e0e",
+            "name": "Text to json output"
+        },
+        {
+            "parameters": {
+                "operation": "download",
+                "fileId": {
+                    "__rl": true,
+                    "value": "={{ $json.cv_id }}",
+                    "mode": "id"
+                },
+                "options": {
+                    "binaryPropertyName": "data"
+                }
+            },
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                1936,
+                992
+            ],
+            "id": "ec7ac773-0295-47d9-9ad8-e57fad343c47",
+            "name": "Download CV"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "n8n-nodes-base.splitInBatches",
+            "typeVersion": 3,
+            "position": [
+                800,
+                976
+            ],
+            "id": "6078c037-bab9-42d6-876f-30df51308ec8",
+            "name": "Loop Over Items"
+        },
+        {
+            "parameters": {
+                "jsCode": "return items.filter(i =>\n  i.json[\"Recruiter Email\"] &&\n  i.json[\"Recruiter Email\"].toString().trim() !== \"\" &&\n  (i.json[\"Email Sent\"] || \"\").toString().trim().toLowerCase() != \"yes\"\n);\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                576,
+                976
+            ],
+            "id": "05a89842-9a2b-4e9f-b986-a90c6f57e4bb",
+            "name": "Filtration and normalisation data"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Mapping between normalized CV categories and Google Drive file IDs (use env vars)\nconst cvMap = {\n  fullstack: { id: $env.CV_FULLSTACK_FILE_ID, name: \"CV_Anass_Essadikine_FullStack.pdf\" },\n  devops: { id: $env.CV_DEVOPS_FILE_ID, name: \"CV_Anass_Essadikine_DevOps.pdf\" },\n  datascience: { id: $env.CV_DATASCIENCE_FILE_ID, name: \"CV_Anass_Essadikine_DataScience.pdf\" },\n  dataengineer: { id: $env.CV_DATAENGINEER_FILE_ID, name: \"CV_Anass_Essadikine_DataEngineer.pdf\" },\n  businessintelligence: { id: $env.CV_BI_FILE_ID, name: \"CV_Anass_Essadikine_BusinessIntelligence.pdf\" }\n};\n\nreturn items.map(item => {\n  let cat = (item.json.cv_category || \"\")\n    .toLowerCase()\n    .trim()\n    .replace(/\\s+/g, \"\")\n    .replace(/[-_]/g, \"\");\n\n  const cv = cvMap[cat];\n  if (!cv || !cv.id) {\n    throw new Error(\n      `Unknown or unmapped CV category: \"${item.json.cv_category}\". Set env vars for CV file IDs.`\n    );\n  }\n\n  item.json.cv_id = cv.id;\n  item.json.cv_name = cv.name;\n  return item;\n});\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1552,
+                992
+            ],
+            "id": "dba208e8-7cd3-435f-8749-751fb5b89bb0",
+            "name": "Chose Resume"
+        },
+        {
+            "parameters": {
+                "operation": "update",
+                "documentId": "={{ $env.GSHEET_OFFERS_ID }}",
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Email Sent": "Yes",
+                        "Recruiter Email": "={{ $json.to }}",
+                        "row_number": 0
+                    },
+                    "matchingColumns": [
+                        "Recruiter Email"
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                2144,
+                1168
+            ],
+            "id": "7be8dd0a-8ebf-47b6-b5a2-59a9bade9b62",
+            "name": "Update row in sheet"
+        },
+        {
+            "parameters": {
+                "jsCode": "return [\n  {\n    json: {\n      subject: $json[\"object\"],\n      to: $json[\"email_to\"],\n      cv_name: $json[\"cv_name\"],\n      cv_id: $json[\"cv_id\"],\n      email_html: $json[\"message\"]\n        .replace(/\\n\\n+/g, \"<br><br>\")\n        .replace(/\\n/g, \"<br>\")\n    }\n  }\n];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1744,
+                992
+            ],
+            "id": "377dcef8-ccdc-41b2-b887-d1bcada5259c",
+            "name": "Email Format"
+        },
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ],
+                "additionalFields": {
+                    "download": true
+                }
+            },
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                384,
+                512
+            ],
+            "id": "27cdb63a-489b-4148-8bd4-451972d46f7b",
+            "name": "Telegram Trigger (Image)",
+            "webhookId": "REDACTED_WEBHOOK_ID"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=You are an expert AI specialized in extracting structured information from social media job postings in multiple languages with precise categorization.\n\nNOW PROCESS THE PROVIDED TEXT:\n{{ $json.ocr_text }}",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [
+                1760,
+                480
+            ],
+            "id": "ab190519-5997-4be7-a3a1-e8461dc9ecc4",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "model": "deepseek-reasoner",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+            "typeVersion": 1,
+            "position": [
+                1760,
+                688
+            ],
+            "id": "e8c40e23-3607-4d82-84dd-bdd3b16e226f",
+            "name": "DeepSeek Chat Model1"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": "={{ $env.GSHEET_OFFERS_ID }}",
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Recruiter Email": "={{ $json.RecruiterEmail }}",
+                        "Categorie": "={{ $json.Categorie }}",
+                        "Email Sent": "No",
+                        "Job Offer Message": "={{ $json.JobOfferMessage }}",
+                        "Recruiter Name": "={{ $json.RecruiterName }}"
+                    },
+                    "matchingColumns": [],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                2128,
+                720
+            ],
+            "id": "8e0554c0-376b-4c94-b18c-eb4221c6d0ef",
+            "name": "Append row in sheet"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "caption",
+                            "name": "caption",
+                            "value": "=={{ $json.message.caption || \"\" }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "senderId",
+                            "name": "senderId",
+                            "value": "=={{ $json.message.from?.id || \"\" }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                832,
+                496
+            ],
+            "id": "f23702c5-417b-4c7f-b42c-ad0e6676cf4c",
+            "name": "Prepare Inputs"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "hasPhoto",
+                            "leftValue": "={{ !!$json.message?.photo?.length }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                608,
+                512
+            ],
+            "id": "c9885ed1-3961-49f8-93dc-fb8fe44ccba7",
+            "name": "Has Photo"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.ocr.space/parse/image",
+                "sendBody": true,
+                "contentType": "multipart-form-data",
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "={{ $env.OCR_SPACE_API_KEY }}"
+                        },
+                        {
+                            "name": "language",
+                            "value": "eng"
+                        },
+                        {
+                            "name": "isOverlayRequired",
+                            "value": "false"
+                        },
+                        {
+                            "name": "OCREngine",
+                            "value": "2"
+                        },
+                        {
+                            "parameterType": "formBinaryData",
+                            "name": "file",
+                            "inputDataFieldName": "data"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                1040,
+                496
+            ],
+            "id": "f1cb9bf4-0113-4070-83cf-f526aed22d8d",
+            "name": "HTTP Request1"
+        },
+        {
+            "parameters": {
+                "jsCode": "const res = $json;\nconst parsedText = (res?.ParsedResults?.[0]?.ParsedText || \"\").trim();\nconst caption = ($json.caption ?? $json.message?.caption ?? \"\").toString().trim();\nconst ocrText = caption ? `${caption}\\n\\n${parsedText}`.trim() : parsedText;\nreturn [{\n  ocr_text: ocrText,\n  ocr_text_raw: parsedText,\n  ocr_ok: ocrText.length > 10,\n  ocr_error: (res?.ErrorMessage || \"\").toString()\n}];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1280,
+                496
+            ],
+            "id": "73a4e518-0641-4ac5-9554-a8460e2ce733",
+            "name": "Extract OCR Text"
+        },
+        {
+            "parameters": {
+                "jsCode": "let result = [];\ntry {\n  const outerObj = typeof $json.output === 'string' ? JSON.parse($json.output) : $json.output;\n  if (Array.isArray(outerObj)) {\n    outerObj.forEach(item => {\n      if (item && item.output) {\n        try {\n          const innerObj = JSON.parse(item.output);\n          result.push({\n            RecruiterEmail: (innerObj.RecruiterEmail || \"\").toString().trim(),\n            Categorie: (innerObj.Categorie || \"\").toString().trim(),\n            JobOfferMessage: (innerObj.JobOfferMessage || \"\").toString().trim(),\n            RecruiterName: (innerObj.RecruiterName || \"\").toString().trim()\n          });\n        } catch {\n          result.push({ RecruiterEmail: \"\", Categorie: \"\", JobOfferMessage: item.output.toString().trim(), RecruiterName: \"\" });\n        }\n      }\n    });\n  } else if (outerObj && outerObj.output) {\n    const innerObj = JSON.parse(outerObj.output);\n    result.push({\n      RecruiterEmail: (innerObj.RecruiterEmail || \"\").toString().trim(),\n      Categorie: (innerObj.Categorie || \"\").toString().trim(),\n      JobOfferMessage: (innerObj.JobOfferMessage || \"\").toString().trim(),\n      RecruiterName: (innerObj.RecruiterName || \"\").toString().trim()\n    });\n  } else {\n    result.push({\n      RecruiterEmail: (outerObj.RecruiterEmail || \"\").toString().trim(),\n      Categorie: (outerObj.Categorie || \"\").toString().trim(),\n      JobOfferMessage: (outerObj.JobOfferMessage || \"\").toString().trim(),\n      RecruiterName: (outerObj.RecruiterName || \"\").toString().trim()\n    });\n  }\n} catch (e) {\n  result.push({ RecruiterEmail: \"\", Categorie: \"\", JobOfferMessage: \"\", RecruiterName: \"\" });\n}\nreturn result;\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                2112,
+                480
+            ],
+            "id": "3b5e5add-e594-41a4-b20a-72000c346f56",
+            "name": "Normalize"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "ocrOk",
+                            "leftValue": "={{ $json.ocr_ok }}",
+                            "rightValue": "true",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEquals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                1504,
+                496
+            ],
+            "id": "21d1b9a8-94bb-4bb9-ac1a-fe0b1216146f",
+            "name": "OCR status"
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $json.message.chat.id }}",
+                "text": "Please send a job-offer screenshot as a PHOTO",
+                "additionalFields": {}
+            },
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                608,
+                736
+            ],
+            "id": "f35e2c94-adde-4b31-9afc-cbc713bf4fab",
+            "name": "Message sending failed",
+            "webhookId": "REDACTED_WEBHOOK_ID"
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $json.message.chat.id }}",
+                "text": "OCR failed",
+                "additionalFields": {}
+            },
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                1520,
+                736
+            ],
+            "id": "fb3fdebf-5984-4084-846c-dbab259099e6",
+            "name": "OCR failed",
+            "webhookId": "REDACTED_WEBHOOK_ID"
+        },
+        {
+            "parameters": {
+                "sendTo": "={{ $json.to }}",
+                "subject": "={{ $json.subject }}",
+                "message": "={{ $json.email_html }}",
+                "options": {
+                    "attachmentsUi": {
+                        "attachmentsBinary": [
+                            {}
+                        ]
+                    }
+                }
+            },
+            "name": "Send email to the recruiter",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2,
+            "position": [
+                2144,
+                992
+            ],
+            "id": "1efe888e-0381-4021-81cc-bde0fc7bd891",
+            "webhookId": "REDACTED_WEBHOOK_ID"
+        }
+    ],
+    "connections": {
+        "Google Sheets": {
+            "main": [
+                [
+                    {
+                        "node": "Filtration and normalisation data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "DeepSeek Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Basic LLM Chain",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Basic LLM Chain": {
+            "main": [
+                [
+                    {
+                        "node": "Text to json output",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Text to json output": {
+            "main": [
+                [
+                    {
+                        "node": "Chose Resume",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Chose Resume": {
+            "main": [
+                [
+                    {
+                        "node": "Email Format",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Email Format": {
+            "main": [
+                [
+                    {
+                        "node": "Download CV",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Download CV": {
+            "main": [
+                [
+                    {
+                        "node": "Send email to the recruiter",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Update row in sheet",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Update row in sheet": {
+            "main": [
+                [
+                    {
+                        "node": "Loop Over Items",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filtration and normalisation data": {
+            "main": [
+                [
+                    {
+                        "node": "Loop Over Items",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Loop Over Items": {
+            "main": [
+                [],
+                [
+                    {
+                        "node": "Basic LLM Chain",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Telegram Trigger (Image)": {
+            "main": [
+                [
+                    {
+                        "node": "Has Photo",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Photo": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare Inputs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Message sending failed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Inputs": {
+            "main": [
+                [
+                    {
+                        "node": "HTTP Request1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "HTTP Request1": {
+            "main": [
+                [
+                    {
+                        "node": "Extract OCR Text",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract OCR Text": {
+            "main": [
+                [
+                    {
+                        "node": "OCR status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OCR status": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "OCR failed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "DeepSeek Chat Model1": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Normalize",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Normalize": {
+            "main": [
+                [
+                    {
+                        "node": "Append row in sheet",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Append row in sheet": {
+            "main": [
+                [
+                    {
+                        "node": "Google Sheets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "REDACTED_INSTANCE_ID"
+    }
+}
