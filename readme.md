@@ -61,6 +61,7 @@ Simply import the workflow JSON and set up credentials.
 
 ### Option B: Self-Hosted (Docker)
 This is the recommended approach for full control.
+![Self Hosted](docs/screenshots/digital-ocean-setup.png)
 
 1.  **Run n8n** (example `docker-compose.yml` snippet):
     ```yaml
@@ -89,6 +90,7 @@ This is the most critical part. Follow carefully.
 2.  Send `/newbot` and follow instructions.
 3.  Copy the **HTTP API Token**.
 4.  In n8n: **Credentials** → **Telegram API** → Paste token.
+![Telegram Interaction](docs/screenshots/telegram-interaction.png)
 
 ### 👁️ 2. OCR.space
 1.  Register for a free key.
@@ -99,6 +101,7 @@ This is the most critical part. Follow carefully.
 1.  Generate an API Key in DeepSeek platform.
 2.  In n8n: **Credentials** → **DeepSeek API** → Paste key.
 3.  Base URL is usually `https://api.deepseek.com`.
+![DeepSeek Dashboard](docs/screenshots/deepseek-setup.png)
 
 ### ☁️ 4. Google Cloud (OAuth2)
 *Required for: Gmail, Sheets, Drive.*
@@ -119,6 +122,7 @@ This is the most critical part. Follow carefully.
     *   Paste ID and Secret.
     *   Scopes: Add `https://www.googleapis.com/auth/gmail.send`, `https://www.googleapis.com/auth/drive.readonly`, `https://www.googleapis.com/auth/spreadsheets`.
     *   Connect/Sign in with Google.
+![GCP API Setup](docs/screenshots/gcp-setup.png)
 
 ---
 
@@ -129,6 +133,8 @@ Create a new Google Sheet. You **must** have these exact header names in Row 1:
 | Recruiter Email | Categorie | Job Offer Message | Recruiter Name | Email Sent |
 | :--- | :--- | :--- | :--- | :--- |
 | *(filled by AI)* | *(filled by AI)* | *(OCR Text)* | *(filled by AI)* | No |
+
+![Sheet Schema](docs/screenshots/google-sheets-schema.png)
 
 **Optional but recommended columns:**
 *   `Job Title`
@@ -234,10 +240,12 @@ Use the provided `.env.example` as a template for public sharing.
 ---
 
 ## Screenshots Checklist
-*   [ ] `docs/screenshots/workflow-overview.png` (Full canvas view)
-*   [ ] `docs/screenshots/telegram-example.png` (Chat interaction)
-*   [ ] `docs/screenshots/sheet-schema.png` (Columns view)
-*   [ ] `docs/screenshots/email-result.png` (Draft/Sent email)
+*   [x] `docs/screenshots/workflow-overview.png` (Full canvas view)
+*   [x] `docs/screenshots/telegram-interaction.png` (Chat interaction)
+*   [x] `docs/screenshots/google-sheets-schema.png` (Columns view)
+*   [x] `docs/screenshots/digital-ocean-setup.png` (Hosting)
+*   [x] `docs/screenshots/gcp-setup.png` (GCP)
+*   [x] `docs/screenshots/deepseek-setup.png` (AI)
 
 ---
 
